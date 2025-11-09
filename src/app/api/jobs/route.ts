@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import { Job } from '@/lib/models/Job';
 import { Customer } from '@/lib/models/Customer';
+import { User } from '@/lib/models/User';
+import { Notification } from '@/lib/models/Notification';
 import { jobCreateSchema } from '@/lib/validations/job';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import mongoose from 'mongoose';
@@ -113,6 +115,7 @@ export async function POST(req: NextRequest) {
     const customerId = formData.get('customerId') as string;
     const quotedAmount = formData.get('quotedAmount') as string;
     const notes = formData.get('notes') as string;
+    const projectManagerId = formData.get('projectManagerId') as string | null;
     const quoteFile = formData.get('quoteFile') as File | null;
 
     // Build body for validation
@@ -126,6 +129,10 @@ export async function POST(req: NextRequest) {
 
     if (quotedAmount) {
       body.quotedAmount = parseFloat(quotedAmount);
+    }
+
+    if (projectManagerId) {
+      body.projectManagerId = projectManagerId;
     }
 
     // Validate data
@@ -183,6 +190,28 @@ export async function POST(req: NextRequest) {
       { path: 'drafterId', select: 'name email' },
       { path: 'projectManagerId', select: 'name email' },
     ]);
+
+    // Create notification if a PM was assigned
+    if (projectManagerId) {
+      try {
+        const pmObjectId = new mongoose.Types.ObjectId(projectManagerId);
+        const pmUser = await User.findById(pmObjectId);
+        
+        if (pmUser) {
+          await Notification.create({
+            userId: pmObjectId,
+            type: 'job_assigned',
+            title: 'New Job Assigned',
+            message: `You have been assigned to job "${job.jobName}" (${job.jobNumber})`,
+            jobId: job._id,
+          });
+          console.log(`✅ Notification created for PM ${pmUser.name} (${pmUser.email})`);
+        }
+      } catch (notificationError) {
+        console.error('Error creating notification:', notificationError);
+        // Don't fail the job creation if notification creation fails
+      }
+    }
 
     return NextResponse.json(
       {
