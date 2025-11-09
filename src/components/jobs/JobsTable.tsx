@@ -76,13 +76,25 @@ export function JobsTable({ session }: JobsTableProps) {
   const userId = (freshSession?.user as any)?.id || (session?.user as any)?.id;
   const isAdmin = userRole === 'Admin';
 
+  // Fetch jobs when filters change
   useEffect(() => {
     fetchJobs();
   }, [statusFilter, priorityFilter, userRole, userId]);
 
-  const fetchJobs = async () => {
+  // Auto-refresh jobs every 15 seconds (without showing loading spinner)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('[JobsTable] Auto-refreshing jobs...');
+      fetchJobs(false); // Don't show loading spinner on auto-refresh
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [statusFilter, priorityFilter, userRole, userId]);
+
+  const fetchJobs = async (showLoading = true) => {
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (priorityFilter !== 'all') params.append('priority', priorityFilter);
@@ -96,12 +108,15 @@ export function JobsTable({ session }: JobsTableProps) {
       const data = await response.json();
 
       if (data.success) {
+        console.log(`[JobsTable] Fetched ${data.data.length} jobs`);
         setJobs(data.data);
       }
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -198,7 +213,7 @@ export function JobsTable({ session }: JobsTableProps) {
           </Select>
         </div>
 
-        <Button onClick={fetchJobs} disabled={isLoading}>
+        <Button onClick={() => fetchJobs(true)} disabled={isLoading}>
           <Filter className="h-4 w-4 mr-2" />
           {isLoading ? 'Loading...' : 'Refresh'}
         </Button>
@@ -315,4 +330,6 @@ export function JobsTable({ session }: JobsTableProps) {
     </div>
   );
 }
+
+
 
