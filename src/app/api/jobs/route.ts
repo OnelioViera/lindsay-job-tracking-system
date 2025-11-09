@@ -163,11 +163,11 @@ export async function POST(req: NextRequest) {
         // Store relative URL for database
         quotePdfUrl = `/uploads/quotes/${filename}`;
       } catch (fileError) {
-        console.error('Error saving quote PDF:', fileError);
-        return NextResponse.json(
-          { error: 'Failed to save quote PDF' },
-          { status: 500 }
-        );
+        // Gracefully handle file upload failures (e.g., on Vercel's read-only filesystem)
+        // Job creation continues without the file
+        console.warn('File upload failed (this is expected on Vercel):', fileError);
+        console.log('Job will be created without quote PDF - consider using cloud storage');
+        // Don't set quotePdfUrl, job will be created without it
       }
     }
 
