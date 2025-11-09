@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { CreateJobForm } from '@/components/jobs/CreateJobForm';
+import { toast } from 'sonner';
 
 export default function EditJobPage() {
   const params = useParams();
@@ -36,7 +37,7 @@ export default function EditJobPage() {
         setJob(data);
       } catch (error) {
         console.error('Error fetching job:', error);
-        alert('Failed to load job data');
+        toast.error('Failed to load job data');
         router.push('/jobs');
       } finally {
         setIsLoading(false);
@@ -64,11 +65,11 @@ export default function EditJobPage() {
       }
 
       const result = await response.json();
-      alert('Job updated successfully!');
+      toast.success('Job updated successfully!');
       router.push(`/jobs/${params.id}`);
     } catch (error: any) {
       console.error('Error updating job:', error);
-      alert(error.message || 'Failed to update job');
+      toast.error(error.message || 'Failed to update job');
       throw error;
     }
   };

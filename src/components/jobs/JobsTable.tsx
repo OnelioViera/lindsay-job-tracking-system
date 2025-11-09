@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Job {
   _id: string;
@@ -126,32 +127,39 @@ export function JobsTable({ session }: JobsTableProps) {
       job.jobNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = async (job: Job) => {
-    if (!confirm(`Are you sure you want to delete job "${job.jobName}" (${job.jobNumber})?`)) {
-      return;
-    }
+  const handleDelete = (job: Job) => {
+    toast.warning(`Delete job "${job.jobName}" (${job.jobNumber})?`, {
+      description: 'This action cannot be undone.',
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          setIsDeleting(true);
+          const deletePromise = fetch(`/api/jobs/${job._id}`, {
+            method: 'DELETE',
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Failed to delete job');
+            }
+            // Remove job from list
+            setJobs(jobs.filter(j => j._id !== job._id));
+            return response;
+          }).finally(() => {
+            setIsDeleting(false);
+          });
 
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/jobs/${job._id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert(error.error || 'Failed to delete job');
-        return;
-      }
-
-      // Remove job from list
-      setJobs(jobs.filter(j => j._id !== job._id));
-      alert('Job deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete job:', error);
-      alert('Failed to delete job');
-    } finally {
-      setIsDeleting(false);
-    }
+          toast.promise(deletePromise, {
+            loading: 'Deleting job...',
+            success: 'Job deleted successfully',
+            error: (err) => err.message || 'Failed to delete job',
+          });
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   return (

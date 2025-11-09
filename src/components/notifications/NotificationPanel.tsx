@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Bell, AlertCircle, CheckCircle, X, Check, Trash2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export function NotificationPanel() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -77,25 +78,37 @@ export function NotificationPanel() {
     }
   };
 
-  const clearAllRead = async () => {
-    if (!confirm('This will delete all read notifications. Continue?')) {
-      return;
-    }
+  const clearAllRead = () => {
+    toast.warning('Delete all read notifications?', {
+      description: 'This action cannot be undone.',
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          setLoading(true);
+          const clearPromise = fetch('/api/notifications', {
+            method: 'DELETE',
+          }).then(async (response) => {
+            if (!response.ok) {
+              throw new Error('Failed to clear notifications');
+            }
+            await fetchNotifications();
+            return response;
+          }).finally(() => {
+            setLoading(false);
+          });
 
-    setLoading(true);
-    try {
-      const response = await fetch('/api/notifications', {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await fetchNotifications();
-      }
-    } catch (error) {
-      console.error('Failed to clear notifications:', error);
-    } finally {
-      setLoading(false);
-    }
+          toast.promise(clearPromise, {
+            loading: 'Clearing notifications...',
+            success: 'Read notifications cleared',
+            error: 'Failed to clear notifications',
+          });
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   const deleteNotification = async (notificationId: string) => {
