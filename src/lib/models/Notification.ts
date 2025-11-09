@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
-  type: 'job_assigned' | 'job_updated' | 'job_completed';
+  type: 'job_assigned' | 'job_updated' | 'job_deleted' | 'job_completed';
   title: string;
   message: string;
   jobId?: mongoose.Types.ObjectId;
@@ -22,7 +22,7 @@ const notificationSchema = new Schema<INotification>(
     type: {
       type: String,
       required: true,
-      enum: ['job_assigned', 'job_updated', 'job_completed'],
+      enum: ['job_assigned', 'job_updated', 'job_deleted', 'job_completed'],
     },
     title: {
       type: String,

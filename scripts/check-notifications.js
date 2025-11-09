@@ -69,7 +69,7 @@ async function checkNotifications() {
     
     for (const user of users) {
       const count = await Notification.countDocuments({ userId: user._id });
-      const unreadCount = await Notification.countDocuments({ userId: user._id, isRead: false });
+      const unreadCount = await Notification.countDocuments({ userId: user._id, read: false });
       
       if (count > 0) {
         console.log(`   ${user.name} (${user.email}): ${count} total, ${unreadCount} unread`);

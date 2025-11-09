@@ -11,10 +11,10 @@ export function NotificationPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fetch notifications on mount and every 30 seconds
+  // Fetch notifications on mount and every 10 seconds (more responsive)
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -30,6 +30,10 @@ export function NotificationPanel() {
       const response = await fetch('/api/notifications');
       if (response.ok) {
         const data = await response.json();
+        console.log('[NotificationPanel] Fetched notifications:', {
+          count: data.data?.length || 0,
+          unreadCount: data.unreadCount || 0
+        });
         setNotifications(data.data || []);
         setUnreadCount(data.unreadCount || 0);
       }
