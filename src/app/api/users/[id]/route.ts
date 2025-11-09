@@ -71,23 +71,23 @@ export async function PUT(
 
     // Only allow updating specific fields
     const allowedUpdates = ['name', 'email', 'role', 'isActive'];
-    const updates: any = {};
 
     for (const field of allowedUpdates) {
       if (field in body && body[field] !== undefined) {
-        updates[field] = body[field];
+        user[field] = body[field];
       }
     }
 
-    // If updating password
+    // If updating password (will be hashed by pre-save hook)
     if (body.password && body.password.trim()) {
-      updates.password = body.password;
+      user.password = body.password;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    }).select('-password');
+    // Save the user (this triggers the pre-save hook for password hashing)
+    await user.save();
+
+    // Return user without password
+    const updatedUser = await User.findById(id).select('-password');
 
     return NextResponse.json({
       success: true,
