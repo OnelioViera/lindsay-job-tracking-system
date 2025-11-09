@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const role = searchParams.get('role');
 
-    let query: any = { isActive: true };
+    const query: any = { isActive: true };
     if (role) {
       query.role = role;
     }

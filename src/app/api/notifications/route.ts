@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
-    let query: any = { userId };
+    const query: any = { userId };
     if (unreadOnly) {
       query.read = false;
     }

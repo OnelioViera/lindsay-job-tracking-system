@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
     console.log(`[Jobs GET] User: ${(session.user as any).role}, ProjectManagerId param: ${projectManagerId}`);
 
-    let query: any = { deletedAt: null };
+    const query: any = { deletedAt: null };
 
     if (status && status !== 'all') {
       query.status = status;

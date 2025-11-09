@@ -24,7 +24,6 @@ export default function DashboardPage() {
     // Only fetch if session is available with user data
     if (!session?.user) {
       console.log('[Dashboard Component] No session/user available yet, skipping stats fetch');
-      setLoadingStats(false);
       return;
     }
 
@@ -38,7 +37,6 @@ export default function DashboardPage() {
         
         if (!response.ok) {
           console.error('[Dashboard Component] Stats API returned error:', response.status, response.statusText);
-          setLoadingStats(false);
           return;
         }
         
@@ -49,13 +47,12 @@ export default function DashboardPage() {
         if (data.success && data.data) {
           console.log('[Dashboard Component] Setting stats:', data.data);
           setStats(data.data);
-          setLoadingStats(false);
         } else {
           console.warn('[Dashboard Component] Unexpected response format:', data);
-          setLoadingStats(false);
         }
       } catch (error) {
         console.error('[Dashboard Component] Fetch error:', error);
+      } finally {
         setLoadingStats(false);
       }
     };
