@@ -15,14 +15,21 @@ export async function GET(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams;
     const role = searchParams.get('role');
+    const includeInactive = searchParams.get('includeInactive') === 'true';
 
-    const query: any = { isActive: true };
+    const query: any = {};
+    
+    // Only filter by isActive if not explicitly including inactive users
+    if (!includeInactive) {
+      query.isActive = true;
+    }
+    
     if (role) {
       query.role = role;
     }
 
     const users = await User.find(query)
-      .select('_id name email role')
+      .select('_id name email role isActive')
       .sort({ name: 1 });
 
     return NextResponse.json(users);

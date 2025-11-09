@@ -39,7 +39,7 @@ export default function ProjectManagersPage() {
   const fetchProjectManagers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/users?role=Project Manager');
+      const response = await fetch('/api/users?role=Project Manager&includeInactive=true');
       if (response.ok) {
         const data = await response.json();
         setProjectManagers(data);

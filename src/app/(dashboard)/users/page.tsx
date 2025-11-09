@@ -84,8 +84,8 @@ export default function UsersPage() {
   const fetchAllUsers = async () => {
     try {
       setLoading(true);
-      // Fetch users without role filter to get all users
-      const response = await fetch('/api/users');
+      // Fetch all users including inactive ones for admin management
+      const response = await fetch('/api/users?includeInactive=true');
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
