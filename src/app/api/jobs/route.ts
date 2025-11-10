@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
       .populate('estimatorId', 'name email')
       .populate('drafterId', 'name email')
       .populate('projectManagerId', 'name email')
+      .populate('createdBy', 'name email')
       .sort({ createdDate: -1 })
       .limit(limit)
       .skip(skip);
@@ -116,6 +117,7 @@ export async function POST(req: NextRequest) {
     const quotedAmount = formData.get('quotedAmount') as string;
     const notes = formData.get('notes') as string;
     const projectManagerId = formData.get('projectManagerId') as string | null;
+    const estimateDue = formData.get('estimateDue') as string | null;
     const quoteFile = formData.get('quoteFile') as File | null;
 
     // Build body for validation
@@ -133,6 +135,10 @@ export async function POST(req: NextRequest) {
 
     if (projectManagerId) {
       body.projectManagerId = projectManagerId;
+    }
+
+    if (estimateDue) {
+      body.estimateDue = estimateDue;
     }
 
     // Validate data
@@ -178,10 +184,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Get current user ID to set as creator
+    const currentUserId = (session.user as any).id;
+
     const job = await Job.create({
       ...validatedData,
       quotePdfUrl,
       createdDate: new Date(),
+      createdBy: currentUserId,
+      estimateDueDate: validatedData.estimateDue ? new Date(validatedData.estimateDue) : undefined,
     });
 
     const populatedJob = await job.populate([
@@ -189,10 +200,10 @@ export async function POST(req: NextRequest) {
       { path: 'estimatorId', select: 'name email' },
       { path: 'drafterId', select: 'name email' },
       { path: 'projectManagerId', select: 'name email' },
+      { path: 'createdBy', select: 'name email' },
     ]);
 
     // Get current user's role and information
-    const currentUserId = (session.user as any).id;
     console.log(`[Jobs API] Current user ID from session: ${currentUserId}`);
     console.log(`[Jobs API] Session user object:`, JSON.stringify(session.user, null, 2));
     
@@ -258,15 +269,25 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Error creating job:', error);
+    console.error('❌ Error creating job:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
     if (error.name === 'ValidationError' || error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors || error.message },
         { status: 400 }
       );
     }
+    
+    // Return more detailed error for debugging
     return NextResponse.json(
-      { error: 'Failed to create job' },
+      { 
+        error: 'Failed to create job',
+        message: error.message,
+        name: error.name 
+      },
       { status: 500 }
     );
   }

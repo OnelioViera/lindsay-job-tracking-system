@@ -84,7 +84,10 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {links.map((link) => {
           const Icon = link.icon;
-          const isActive = pathname === link.href;
+          // Special handling for Dashboard: highlight for both '/' and '/dashboard'
+          const isActive = link.href === '/' 
+            ? (pathname === '/' || pathname === '/dashboard')
+            : pathname === link.href;
 
           return (
             <Link

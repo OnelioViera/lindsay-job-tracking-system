@@ -199,6 +199,16 @@ export async function PUT(
           );
 
           await Promise.all([...adminNotifications, ...pmNotifications]);
+          // Also set the job's draftCompletionDate if not already set
+          try {
+            const job = await Job.findById(estimate.jobId);
+            if (job && !job.draftCompletionDate) {
+              job.draftCompletionDate = new Date();
+              await job.save();
+            }
+          } catch (jobDateError) {
+            console.error('Error setting job draftCompletionDate:', jobDateError);
+          }
         }
       } catch (notificationError) {
         console.error('❌ Error creating submission notifications:', notificationError);

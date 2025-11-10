@@ -16,6 +16,11 @@ interface Job {
   jobNumber: string;
   jobName: string;
   status: string;
+  projectManagerId?: {
+    _id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 interface Structure {
@@ -55,11 +60,34 @@ export default function NewEstimatePage() {
 
   const [structures, setStructures] = useState<Structure[]>([]);
   const [itemsToPurchase, setItemsToPurchase] = useState<ItemToPurchase[]>([]);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
     fetchJobs();
     fetchProjectManagers();
   }, []);
+
+  // When a job is selected, auto-populate the PM from the job
+  useEffect(() => {
+    if (formData.jobId) {
+      const job = jobs.find(j => j._id === formData.jobId);
+      setSelectedJob(job || null);
+      
+      // Auto-populate PM from job if available
+      if (job?.projectManagerId?._id) {
+        setFormData(prev => ({
+          ...prev,
+          assignedPMId: job.projectManagerId!._id
+        }));
+      } else {
+        // Clear PM if job doesn't have one
+        setFormData(prev => ({
+          ...prev,
+          assignedPMId: ''
+        }));
+      }
+    }
+  }, [formData.jobId, jobs]);
 
   const fetchJobs = async () => {
     try {
@@ -244,20 +272,61 @@ export default function NewEstimatePage() {
               </div>
 
               <div>
-                <Label htmlFor="assignedPMId">Assign to Project Manager (Optional)</Label>
-                <select
-                  id="assignedPMId"
-                  value={formData.assignedPMId}
-                  onChange={(e) => setFormData({ ...formData, assignedPMId: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                >
-                  <option value="">Not assigned</option>
-                  {projectManagers.map((pm) => (
-                    <option key={pm._id} value={pm._id}>
-                      {pm.name} ({pm.email})
-                    </option>
-                  ))}
-                </select>
+                <Label htmlFor="assignedPMId">Project Manager</Label>
+                {selectedJob?.projectManagerId ? (
+                  <div className="space-y-2">
+                    <div className="w-full px-3 py-2 border border-green-300 bg-green-50 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-slate-900">
+                            {selectedJob.projectManagerId.name}
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            {selectedJob.projectManagerId.email}
+                          </p>
+                        </div>
+                        <span className="text-xs text-green-700 font-medium bg-green-100 px-2 py-1 rounded">
+                          From Job
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      ℹ️ This PM was assigned when the job was created. You can change it if needed.
+                    </p>
+                    <select
+                      id="assignedPMId"
+                      value={formData.assignedPMId}
+                      onChange={(e) => setFormData({ ...formData, assignedPMId: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                    >
+                      <option value="">Change PM (optional)</option>
+                      {projectManagers.map((pm) => (
+                        <option key={pm._id} value={pm._id}>
+                          {pm.name} ({pm.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <select
+                      id="assignedPMId"
+                      value={formData.assignedPMId}
+                      onChange={(e) => setFormData({ ...formData, assignedPMId: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                    >
+                      <option value="">Select a Project Manager</option>
+                      {projectManagers.map((pm) => (
+                        <option key={pm._id} value={pm._id}>
+                          {pm.name} ({pm.email})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-amber-600">
+                      ⚠️ No PM was assigned to this job. Please select one.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>

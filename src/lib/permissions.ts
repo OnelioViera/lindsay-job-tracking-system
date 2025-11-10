@@ -54,7 +54,7 @@ const rolePermissions: Record<UserRole, Permission> = {
     // Grant job creation/edit to estimators per new requirements
     canCreateJobs: true,
     canEditJobs: true,
-    canDeleteJobs: false,
+    canDeleteJobs: false, // Can't delete all jobs, but CAN delete jobs they created (checked in API)
     canCreateEstimates: true,
     canApproveEstimates: false,
     canUploadDrawings: false,

@@ -145,6 +145,16 @@ export async function POST(req: NextRequest) {
       { path: 'assignedPMId', select: 'name email' },
     ]);
 
+    // Ensure job.draftStartDate is set when the first estimate draft is created
+    try {
+      if (job && !job.draftStartDate) {
+        job.draftStartDate = new Date();
+        await job.save();
+      }
+    } catch (e) {
+      console.error('Error setting job draftStartDate:', e);
+    }
+
     // Handle notifications
     try {
       const currentUser = await User.findById(userId);

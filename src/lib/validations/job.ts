@@ -19,6 +19,7 @@ export const jobCreateSchema = z.object({
     .number()
     .min(0, 'Quoted amount must be 0 or greater')
     .optional(),
+  estimateDue: z.string().optional(),
   quotePdfUrl: z
     .string()
     .optional(),

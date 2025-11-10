@@ -37,6 +37,7 @@ interface Job {
   drafterId?: any;
   projectManagerId?: any;
   createdDate: string;
+  createdBy?: any;
 }
 
 const statusColors: Record<string, string> = {
@@ -76,6 +77,9 @@ export function JobsTable({ session }: JobsTableProps) {
   const userRole = (freshSession?.user as any)?.role || (session?.user as any)?.role;
   const userId = (freshSession?.user as any)?.id || (session?.user as any)?.id;
   const isAdmin = userRole === 'Admin';
+
+  // Debug logging
+  console.log('[JobsTable] Current user:', { userId, userRole, isAdmin });
 
   // Fetch jobs when filters change
   useEffect(() => {
@@ -265,7 +269,22 @@ export function JobsTable({ session }: JobsTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredJobs.map((job) => (
+              filteredJobs.map((job) => {
+                // Debug: Check creator status for each job
+                const createdById = job.createdBy?._id || job.createdBy;
+                const isCreator = createdById === userId;
+                const canEdit = isAdmin || isCreator;
+                
+                console.log('[JobsTable] Job:', {
+                  jobNumber: job.jobNumber,
+                  createdBy: job.createdBy,
+                  createdById,
+                  userId,
+                  isCreator,
+                  canEdit
+                });
+
+                return (
                 <TableRow key={job._id} className="hover:bg-slate-50">
                   <TableCell className="font-mono text-sm font-semibold">
                     {job.jobNumber}
@@ -299,7 +318,8 @@ export function JobsTable({ session }: JobsTableProps) {
                         <Eye className="h-4 w-4" />
                         View
                       </Button>
-                      {isAdmin && (
+                      {/* Show Edit/Delete for Admins or job creators */}
+                      {canEdit && (
                         <>
                           <Button
                             variant="ghost"
@@ -325,7 +345,8 @@ export function JobsTable({ session }: JobsTableProps) {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+              );
+              })
             )}
           </TableBody>
         </Table>

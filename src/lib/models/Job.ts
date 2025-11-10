@@ -28,10 +28,12 @@ export interface IJob extends Document {
   estimatorId?: mongoose.Types.ObjectId;
   drafterId?: mongoose.Types.ObjectId;
   projectManagerId?: mongoose.Types.ObjectId;
+  createdBy?: mongoose.Types.ObjectId;
 
   // Dates
   createdDate: Date;
   estimateDate?: Date;
+  estimateDueDate?: Date;
   draftStartDate?: Date;
   draftCompletionDate?: Date;
   submissionDate?: Date;
@@ -125,12 +127,18 @@ const jobSchema = new Schema<IJob>(
       ref: 'User',
       index: true,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+    },
     createdDate: {
       type: Date,
       default: Date.now,
       required: true,
     },
     estimateDate: Date,
+  estimateDueDate: Date,
     draftStartDate: Date,
     draftCompletionDate: Date,
     submissionDate: Date,

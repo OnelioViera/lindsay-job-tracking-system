@@ -20,12 +20,6 @@ export default function EditJobPage() {
   const isAdmin = userRole === 'Admin';
 
   useEffect(() => {
-    // Redirect if not admin
-    if (session && !isAdmin) {
-      router.push('/jobs');
-      return;
-    }
-
     // Fetch job data
     const fetchJob = async () => {
       try {
@@ -75,9 +69,33 @@ export default function EditJobPage() {
   };
 
   if (!session || !isAdmin) {
+    // If there's no session, block access entirely. Otherwise we'll allow when the fetched job shows the current user is the creator.
+    if (!session) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <p className="text-slate-500">Access denied.</p>
+        </div>
+      );
+    }
+  }
+
+  // While loading, show loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-slate-500">Access denied. Admin only.</p>
+        <p className="text-slate-500">Loading job data...</p>
+      </div>
+    );
+  }
+
+  // After fetch, check creator permission
+  const currentUserId = (session?.user as any)?.id;
+  const isCreator = job && job.createdBy && ((job.createdBy._id && job.createdBy._id === currentUserId) || job.createdBy === currentUserId);
+
+  if (!isAdmin && !isCreator) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-slate-500">Access denied. Admins or the job creator only.</p>
       </div>
     );
   }

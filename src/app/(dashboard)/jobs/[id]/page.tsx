@@ -136,6 +136,9 @@ export default function JobDetailPage() {
     return new Date(date).toLocaleDateString();
   };
 
+  const currentUserId = (session?.user as any)?.id;
+  const canAssignPM = session?.user && (((session.user as any).role === 'Admin') || (job.createdBy && ((job.createdBy._id && job.createdBy._id === currentUserId) || job.createdBy === currentUserId)));
+
   return (
     <div className="space-y-6">
       {/* Back Button */}
@@ -236,7 +239,7 @@ export default function JobDetailPage() {
                   <div>
                     <p className="text-sm text-slate-600">Estimate Due</p>
                     <p className="font-medium text-slate-900">
-                      {formatDate(job.estimateDate)}
+                      {formatDate(job.estimateDueDate)}
                     </p>
                   </div>
                 </div>
@@ -400,7 +403,7 @@ export default function JobDetailPage() {
           <Card className="border-slate-200 p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Personnel</h3>
-              {session?.user && (session.user as any).role === 'Admin' && (
+              {canAssignPM && (
                 <Button
                   variant="ghost"
                   size="sm"

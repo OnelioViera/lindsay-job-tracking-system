@@ -38,6 +38,8 @@ export function CreateJobForm({
     customerId: initialData?.customerId?._id || '',
     quotedAmount: initialData?.quotedAmount?.toString() || '',
     notes: initialData?.notes || '',
+    projectManagerId: initialData?.projectManagerId?._id || '',
+    estimateDue: initialData?.estimateDueDate ? new Date(initialData.estimateDueDate).toISOString().slice(0,10) : '',
   });
   const [quoteFile, setQuoteFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -66,6 +68,22 @@ export function CreateJobForm({
 
     fetchCustomers();
 
+    // Fetch project managers for optional assignment
+    const fetchProjectManagers = async () => {
+      try {
+        const response = await fetch('/api/users?role=Project Manager');
+        if (response.ok) {
+          const data = await response.json();
+          const list = Array.isArray(data) ? data : (data.data || []);
+          setProjectManagers(list);
+        }
+      } catch (err) {
+        console.error('Failed to fetch project managers:', err);
+      }
+    };
+
+    fetchProjectManagers();
+
     // Cleanup timeout on unmount
     return () => {
       if (duplicateCheckTimeoutRef.current) {
@@ -73,6 +91,8 @@ export function CreateJobForm({
       }
     };
   }, []);
+
+  const [projectManagers, setProjectManagers] = useState<any[]>([]);
 
   const handleCompanySelect = (customerId: string) => {
     const customer = customers.find((c) => c._id === customerId);
@@ -183,6 +203,8 @@ export function CreateJobForm({
           customerId: formData.customerId,
           quotedAmount: formData.quotedAmount ? parseFloat(formData.quotedAmount) : undefined,
           notes: formData.notes,
+            projectManagerId: formData.projectManagerId || undefined,
+            estimateDue: formData.estimateDue || undefined,
         };
         
         await onSubmit(submitData);
@@ -203,6 +225,12 @@ export function CreateJobForm({
         }
         if (formData.notes) {
           formPayload.append('notes', formData.notes);
+        }
+        if (formData.projectManagerId) {
+          formPayload.append('projectManagerId', formData.projectManagerId);
+        }
+        if (formData.estimateDue) {
+          formPayload.append('estimateDue', formData.estimateDue);
         }
         if (quoteFile) {
           formPayload.append('quoteFile', quoteFile);
@@ -227,6 +255,8 @@ export function CreateJobForm({
           customerId: '',
           quotedAmount: '',
           notes: '',
+          projectManagerId: '',
+          estimateDue: '',
         });
         setQuoteFile(null);
         setShowCompanyDropdown(false);
@@ -405,6 +435,35 @@ export function CreateJobForm({
                    />
                  </div>
                </div>
+
+              {/* Project Manager Selection */}
+              <div>
+                <Label htmlFor="projectManagerId" className="mb-2 block">Project Manager (Optional)</Label>
+                <select
+                  id="projectManagerId"
+                  name="projectManagerId"
+                  value={formData.projectManagerId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="">-- None --</option>
+                  {projectManagers.map((pm) => (
+                    <option key={pm._id} value={pm._id}>{pm.name} {pm.email ? `(${pm.email})` : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Estimate Due Date */}
+              <div>
+                <Label htmlFor="estimateDue" className="mb-2 block">Estimate Due (Optional)</Label>
+                <Input
+                  id="estimateDue"
+                  name="estimateDue"
+                  type="date"
+                  value={formData.estimateDue}
+                  onChange={handleChange}
+                />
+              </div>
 
                {/* Quote PDF Upload */}
                <div>
