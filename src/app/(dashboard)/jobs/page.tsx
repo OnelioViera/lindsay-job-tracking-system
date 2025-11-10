@@ -12,6 +12,7 @@ export default function JobsPage() {
   const { data: session } = useSession();
 
   const isAdmin = (session?.user as any)?.role === 'Admin';
+  const isEstimator = (session?.user as any)?.role === 'Estimator';
 
   return (
     <div className="space-y-6">
@@ -23,7 +24,7 @@ export default function JobsPage() {
             Manage and track all your precast concrete jobs
           </p>
         </div>
-        {isAdmin && (
+        {(isAdmin || isEstimator) && (
           <Button
             onClick={() => router.push('/jobs/new')}
             className="bg-blue-600 hover:bg-blue-700 gap-2"

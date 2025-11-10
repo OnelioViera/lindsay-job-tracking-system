@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
     const currentUser = await User.findById(currentUserId);
     console.log(`[Customer API] Current user found:`, currentUser ? `${currentUser.name} (${currentUser.role})` : 'NOT FOUND');
 
-    // If a Project Manager created the customer, notify all admins
-    if (currentUser && currentUser.role === 'Project Manager') {
-      console.log(`[Customer API] PM detected, creating admin notifications...`);
+    // If a Project Manager or Estimator created the customer, notify all admins
+    if (currentUser && (currentUser.role === 'Project Manager' || currentUser.role === 'Estimator')) {
+      console.log(`[Customer API] ${currentUser.role} detected, creating admin notifications...`);
       try {
         // Find all admin users
         const adminUsers = await User.find({ role: 'Admin', isActive: true });
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             userId: admin._id,
             type: 'customer_created',
             title: 'New Customer Added',
-            message: `${currentUser.name} (Project Manager) added a new customer: "${customer.companyName}"`,
+            message: `${currentUser.name} (${currentUser.role}) added a new customer: "${customer.companyName}"`,
             customerId: customer._id,
           })
         );

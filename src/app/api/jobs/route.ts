@@ -221,9 +221,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // If a Project Manager created the job, notify all admins
-    if (currentUser && currentUser.role === 'Project Manager') {
-      console.log(`[Jobs API] PM detected, creating admin notifications...`);
+    // If a Project Manager or Estimator created the job, notify all admins
+    if (currentUser && (currentUser.role === 'Project Manager' || currentUser.role === 'Estimator')) {
+      console.log(`[Jobs API] ${currentUser.role} detected, creating admin notifications...`);
       try {
         // Find all admin users
         const adminUsers = await User.find({ role: 'Admin', isActive: true });
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
             userId: admin._id,
             type: 'job_created',
             title: 'New Job Created',
-            message: `${currentUser.name} (Project Manager) created a new job: "${job.jobName}" (${job.jobNumber})`,
+            message: `${currentUser.name} (${currentUser.role}) created a new job: "${job.jobName}" (${job.jobNumber})`,
             jobId: job._id,
           })
         );

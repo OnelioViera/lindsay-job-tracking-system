@@ -51,8 +51,9 @@ const rolePermissions: Record<UserRole, Permission> = {
   Estimator: {
     canViewDashboard: true,
     canManageUsers: false,
-    canCreateJobs: false,
-    canEditJobs: false,
+    // Grant job creation/edit to estimators per new requirements
+    canCreateJobs: true,
+    canEditJobs: true,
     canDeleteJobs: false,
     canCreateEstimates: true,
     canApproveEstimates: false,

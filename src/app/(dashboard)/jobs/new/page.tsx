@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { hasPermission } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { CreateJobForm } from '@/components/jobs/CreateJobForm';
 import { ArrowLeft } from 'lucide-react';
@@ -10,9 +11,11 @@ export default function NewJobPage() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const isAdmin = (session?.user as any)?.role === 'Admin';
+  const role = (session?.user as any)?.role as any;
+  const isAdmin = role === 'Admin';
+  const canCreateJobs = role ? hasPermission(role, 'canCreateJobs') : false;
 
-  if (!isAdmin) {
+  if (!(isAdmin || canCreateJobs)) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-slate-900">Access Denied</h1>

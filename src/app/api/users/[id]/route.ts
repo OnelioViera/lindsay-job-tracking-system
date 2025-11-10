@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
 import { User } from '@/lib/models/User';
+import { Notification } from '@/lib/models/Notification';
+import { hasPermission } from '@/lib/permissions';
 import mongoose from 'mongoose';
 
 export async function GET(
@@ -69,6 +71,10 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Capture previous role & permissions before update
+    const previousRole = user.role as any;
+    const previouslyCouldCreateJobs = hasPermission(previousRole, 'canCreateJobs');
+
     // Only allow updating specific fields
     const allowedUpdates = ['name', 'email', 'role', 'isActive'];
 
@@ -85,6 +91,38 @@ export async function PUT(
 
     // Save the user (this triggers the pre-save hook for password hashing)
     await user.save();
+
+    // After save, determine if role changed and permissions changed
+    const updatedRole = user.role as any;
+    const nowCanCreateJobs = hasPermission(updatedRole, 'canCreateJobs');
+
+    // Notify user of role change
+    if (previousRole !== updatedRole) {
+      try {
+        await Notification.create({
+          userId: user._id,
+          type: 'role_updated',
+          title: 'Role Updated',
+          message: `Your role has been changed from ${previousRole} to ${updatedRole}.`,
+        });
+      } catch (e) {
+        console.error('Failed to create role_updated notification', e);
+      }
+    }
+
+    // Notify user if newly gained ability to create jobs
+    if (!previouslyCouldCreateJobs && nowCanCreateJobs) {
+      try {
+        await Notification.create({
+          userId: user._id,
+          type: 'permissions_updated',
+          title: 'Job Creation Enabled',
+          message: 'You have been granted permission to create jobs.',
+        });
+      } catch (e) {
+        console.error('Failed to create permissions_updated notification', e);
+      }
+    }
 
     // Return user without password
     const updatedUser = await User.findById(id).select('-password');

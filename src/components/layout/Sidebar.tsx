@@ -20,16 +20,24 @@ export function Sidebar() {
       label: 'Dashboard',
       icon: LayoutDashboard,
     },
-    // Show Estimations tab for Estimators and Admins
-    ...((isEstimator || isAdmin) ? [
+    // Show Quotes tab for Admins only (read-only view of all estimates)
+    ...(isAdmin ? [
+      {
+        href: '/quotes',
+        label: 'Quotes',
+        icon: Calculator,
+      },
+    ] : []),
+    // Show Estimations tab for Estimators only (not admins)
+    ...(isEstimator ? [
       {
         href: '/estimates',
         label: 'Estimations',
         icon: Calculator,
       },
     ] : []),
-    // Only show Jobs tab for admins and PMs
-    ...((isAdmin || isPM) ? [
+    // Show Jobs tab for admins, PMs, and Estimators
+    ...((isAdmin || isPM || isEstimator) ? [
       {
         href: '/jobs',
         label: 'Jobs',
