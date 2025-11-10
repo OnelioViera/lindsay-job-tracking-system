@@ -25,6 +25,8 @@ export async function GET(req: NextRequest) {
 
     const notifications = await Notification.find(query)
       .populate('jobId', 'jobName jobNumber')
+      .populate('customerId', 'companyName name')
+      .populate('estimateId', 'version quotedPrice status')
       .sort({ createdAt: -1 })
       .limit(50);
 

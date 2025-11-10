@@ -61,7 +61,7 @@ const rolePermissions: Record<UserRole, Permission> = {
     canCreateSubmittals: false,
     canManageProduction: false,
     canManageDelivery: false,
-    canManageInventory: false,
+    canManageInventory: true, // Estimators can view and manage inventory for estimates
     canViewReports: true,
     canExportData: false,
   },

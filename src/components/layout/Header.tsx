@@ -22,10 +22,10 @@ export function Header() {
 
   return (
     <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6">
-      {/* Left side - Title/Breadcrumb */}
+      {/* Left side - User Role */}
       <div>
         <h2 className="text-lg font-semibold text-slate-900">
-          Welcome Back
+          {(session?.user as any)?.role || 'User'}
         </h2>
       </div>
 

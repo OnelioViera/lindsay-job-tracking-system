@@ -29,8 +29,10 @@ export default function DashboardPage() {
 
     console.log('[Dashboard Component] useEffect running, session email:', session?.user?.email, 'role:', (session?.user as any)?.role, 'id:', (session?.user as any)?.id);
     
-    const fetchStats = async () => {
-      setLoadingStats(true);
+    const fetchStats = async (showLoading = true) => {
+      if (showLoading) {
+        setLoadingStats(true);
+      }
       try {
         console.log('[Dashboard Component] About to fetch /api/dashboard/stats for', (session?.user as any)?.role);
         const response = await fetch('/api/dashboard/stats');
@@ -53,21 +55,34 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('[Dashboard Component] Fetch error:', error);
       } finally {
-        setLoadingStats(false);
+        if (showLoading) {
+          setLoadingStats(false);
+        }
       }
     };
 
     // Fetch when session becomes available
     fetchStats();
+
+    // Auto-refresh stats every 15 seconds (without showing loading state)
+    const interval = setInterval(() => {
+      console.log('[Dashboard Component] Auto-refreshing stats...');
+      fetchStats(false);
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, [session]);
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
+      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
         <p className="text-slate-600 mt-1">
-          Welcome back, {session?.user?.name}!
+          {isAdmin 
+            ? 'Overview of jobs, customers, and system activity'
+            : 'Your jobs, customers, and activity overview'
+          }
         </p>
       </div>
 

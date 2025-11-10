@@ -191,6 +191,14 @@ export async function POST(req: NextRequest) {
       { path: 'projectManagerId', select: 'name email' },
     ]);
 
+    // Get current user's role and information
+    const currentUserId = (session.user as any).id;
+    console.log(`[Jobs API] Current user ID from session: ${currentUserId}`);
+    console.log(`[Jobs API] Session user object:`, JSON.stringify(session.user, null, 2));
+    
+    const currentUser = await User.findById(currentUserId);
+    console.log(`[Jobs API] Current user found:`, currentUser ? `${currentUser.name} (${currentUser.role})` : 'NOT FOUND');
+
     // Create notification if a PM was assigned
     if (projectManagerId) {
       try {
@@ -208,9 +216,38 @@ export async function POST(req: NextRequest) {
           console.log(`✅ Notification created for PM ${pmUser.name} (${pmUser.email})`);
         }
       } catch (notificationError) {
-        console.error('Error creating notification:', notificationError);
+        console.error('❌ Error creating PM assignment notification:', notificationError);
         // Don't fail the job creation if notification creation fails
       }
+    }
+
+    // If a Project Manager created the job, notify all admins
+    if (currentUser && currentUser.role === 'Project Manager') {
+      console.log(`[Jobs API] PM detected, creating admin notifications...`);
+      try {
+        // Find all admin users
+        const adminUsers = await User.find({ role: 'Admin', isActive: true });
+        console.log(`[Jobs API] Found ${adminUsers.length} admin users:`, adminUsers.map(a => `${a.name} (${a.email})`).join(', '));
+
+        // Create notifications for all admins
+        const notificationPromises = adminUsers.map((admin) =>
+          Notification.create({
+            userId: admin._id,
+            type: 'job_created',
+            title: 'New Job Created',
+            message: `${currentUser.name} (Project Manager) created a new job: "${job.jobName}" (${job.jobNumber})`,
+            jobId: job._id,
+          })
+        );
+
+        await Promise.all(notificationPromises);
+        console.log(`✅ Created notifications for ${adminUsers.length} admin(s) about new job`);
+      } catch (notificationError) {
+        console.error('❌ Error creating admin notifications:', notificationError);
+        // Don't fail the job creation if notification creation fails
+      }
+    } else {
+      console.log(`[Jobs API] Skipping admin notifications - User role: ${currentUser?.role || 'UNKNOWN'}`);
     }
 
     return NextResponse.json(

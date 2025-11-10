@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, AlertCircle, CheckCircle, X, Check, Trash2, XCircle } from 'lucide-react';
+import { Bell, AlertCircle, CheckCircle, X, Check, Trash2, XCircle, UserPlus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -214,6 +214,10 @@ export function NotificationPanel() {
                       <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                     ) : notification.type === 'job_updated' ? (
                       <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    ) : notification.type === 'customer_created' ? (
+                      <UserPlus className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    ) : notification.type === 'job_created' ? (
+                      <Plus className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
                     ) : (
                       <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                     )}

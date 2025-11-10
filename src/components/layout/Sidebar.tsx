@@ -4,13 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Briefcase, Users, ShoppingCart, Settings } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, ShoppingCart, Settings, Calculator } from 'lucide-react';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
   const isAdmin = (session?.user as any)?.role === 'Admin';
+  const isEstimator = (session?.user as any)?.role === 'Estimator';
+  const isPM = (session?.user as any)?.role === 'Project Manager';
 
   const links = [
     {
@@ -18,8 +20,16 @@ export function Sidebar() {
       label: 'Dashboard',
       icon: LayoutDashboard,
     },
-    // Only show Jobs tab for admins
-    ...(isAdmin ? [
+    // Show Estimations tab for Estimators and Admins
+    ...((isEstimator || isAdmin) ? [
+      {
+        href: '/estimates',
+        label: 'Estimations',
+        icon: Calculator,
+      },
+    ] : []),
+    // Only show Jobs tab for admins and PMs
+    ...((isAdmin || isPM) ? [
       {
         href: '/jobs',
         label: 'Jobs',

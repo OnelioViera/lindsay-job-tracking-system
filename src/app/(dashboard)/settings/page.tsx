@@ -1,14 +1,12 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, AlertCircle } from 'lucide-react';
+import { Palette, Bell, Globe, Shield, AlertCircle } from 'lucide-react';
 
 export default function SettingsPage() {
   const { data: session } = useSession();
-  const router = useRouter();
 
   const isAdmin = (session?.user as any)?.role === 'Admin';
 
@@ -33,39 +31,75 @@ export default function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-600 mt-1">Manage system settings and team members</p>
+        <p className="text-slate-600 mt-1">Configure system preferences and appearance</p>
       </div>
 
       {/* Settings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Project Managers Management */}
-        <Card className="border-slate-200 p-6 hover:shadow-lg transition cursor-pointer" onClick={() => router.push('/settings/project-managers')}>
+        {/* Theme & Colors */}
+        <Card className="border-slate-200 p-6 hover:shadow-lg transition cursor-pointer">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Users className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <Palette className="h-6 w-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-900 mb-1">Project Managers</h3>
+              <h3 className="font-semibold text-slate-900 mb-1">Theme & Colors</h3>
               <p className="text-sm text-slate-600 mb-4">
-                Add, edit, and manage project managers in your system
+                Customize the appearance and color scheme of your dashboard
               </p>
-              <Button variant="outline" size="sm">
-                Manage PMs
+              <Button variant="outline" size="sm" disabled>
+                Coming Soon
               </Button>
             </div>
           </div>
         </Card>
 
-        {/* More Settings Coming */}
-        <Card className="border-slate-200 p-6 opacity-50">
+        {/* Notifications */}
+        <Card className="border-slate-200 p-6 hover:shadow-lg transition cursor-pointer">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-slate-100 rounded-lg">
-              <Settings className="h-6 w-6 text-slate-600" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Bell className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-900 mb-1">More Settings</h3>
+              <h3 className="font-semibold text-slate-900 mb-1">Notifications</h3>
               <p className="text-sm text-slate-600 mb-4">
-                Additional settings coming soon
+                Manage notification preferences and alert settings
+              </p>
+              <Button variant="outline" size="sm" disabled>
+                Coming Soon
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Regional Settings */}
+        <Card className="border-slate-200 p-6 hover:shadow-lg transition cursor-pointer">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-green-100 rounded-lg">
+              <Globe className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-slate-900 mb-1">Regional Settings</h3>
+              <p className="text-sm text-slate-600 mb-4">
+                Configure language, timezone, and date format preferences
+              </p>
+              <Button variant="outline" size="sm" disabled>
+                Coming Soon
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Security */}
+        <Card className="border-slate-200 p-6 hover:shadow-lg transition cursor-pointer">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-red-100 rounded-lg">
+              <Shield className="h-6 w-6 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-slate-900 mb-1">Security</h3>
+              <p className="text-sm text-slate-600 mb-4">
+                Manage security settings, password policies, and access controls
               </p>
               <Button variant="outline" size="sm" disabled>
                 Coming Soon
@@ -77,4 +111,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

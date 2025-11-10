@@ -2,10 +2,12 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
-  type: 'job_assigned' | 'job_updated' | 'job_deleted' | 'job_completed';
+  type: 'job_assigned' | 'job_updated' | 'job_deleted' | 'job_completed' | 'customer_created' | 'job_created' | 'quote_created' | 'quote_assigned';
   title: string;
   message: string;
   jobId?: mongoose.Types.ObjectId;
+  customerId?: mongoose.Types.ObjectId;
+  estimateId?: mongoose.Types.ObjectId;
   read: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -22,7 +24,7 @@ const notificationSchema = new Schema<INotification>(
     type: {
       type: String,
       required: true,
-      enum: ['job_assigned', 'job_updated', 'job_deleted', 'job_completed'],
+      enum: ['job_assigned', 'job_updated', 'job_deleted', 'job_completed', 'customer_created', 'job_created', 'quote_created', 'quote_assigned'],
     },
     title: {
       type: String,
@@ -35,6 +37,16 @@ const notificationSchema = new Schema<INotification>(
     jobId: {
       type: Schema.Types.ObjectId,
       ref: 'Job',
+      index: true,
+    },
+    customerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Customer',
+      index: true,
+    },
+    estimateId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Estimate',
       index: true,
     },
     read: {
